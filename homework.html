@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>地址組件</title>
+    <script src="https://unpkg.com/vue@2"></script>
+  </head>
+  <body>
+    <div id="app">
+      <input
+        type="text"
+        v-model="zip"
+        placeholder="郵遞區號"
+        @change="zipChange"
+      />
+      縣市：
+      <select v-model="city" @change="selectCity" style="width: 100px;">
+        <option v-for="option in cityOptions" v-bind:value="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+      行政區：
+      <select v-model="district" @change="selectDistrict()" style="width: 100px;">
+        <option v-for="option in districtOptions" v-bind:value="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+    </div>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          zip: null,
+          city: null,
+          district: null,
+          cityOptions: [],
+          districtOptions: [],
+          data: [
+            { text: "台北市", value: "台北市", parent: null, zip: null },
+            { text: "新北市", value: "新北市", parent: null, zip: null },
+            { text: "中正區", value: "中正區", parent: "台北市", zip: "100" },
+            { text: "松山區", value: "松山區", parent: "台北市", zip: "105" },
+            { text: "林口區", value: "林口區", parent: "新北市", zip: "244" },
+          ],
+        },
+        mounted() {
+          this.fetchData();
+        },
+        methods: {
+          fetchData() {
+            this.cityOptions = this.data.filter((r) => r.parent === null);
+            if (this.city) {
+              this.updateDistrictOptions();
+            }
+            console.log('cityOptions',this.cityOptions)
+          },
+          updateDistrictOptions() {
+            this.districtOptions = this.data.filter(
+              (r) => r.parent === this.city
+            );
+            console.log('districtOptions',this.districtOptions)
+          },
+          selectCity() {
+            this.zip = "";
+            this.district = "";
+            this.districtOptions = this.data.filter(
+              (r) => r.parent === this.city
+            );
+          },
+          selectDistrict() {
+            const matchDistrict = this.districtOptions.find(
+              (f) => f.value === this.district
+            );
+            if (matchDistrict) {
+              this.zip = matchDistrict.zip;
+            } else {
+              this.zip = "";
+            }
+          },
+          zipChange() {
+            const matchZip = this.data.find((r) => r.zip === this.zip);
+            if (matchZip) {
+              this.city = matchZip.parent;
+              this.district = matchZip.value;
+              this.updateDistrictOptions();
+            }
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
